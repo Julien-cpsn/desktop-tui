@@ -1,5 +1,6 @@
 [package]
 name = "desktop-tui"
+description = "A desktop environment without graphics (tmux-like)"
 version = "0.1.0"
 edition = "2024"
 authors = ["julien-cpsn"]

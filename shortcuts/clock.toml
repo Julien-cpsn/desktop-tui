@@ -1,0 +1,5 @@
+name = "Clock"
+logo = """"""
+binary_path = "tenki"
+args = []
+padding = [0, 0]

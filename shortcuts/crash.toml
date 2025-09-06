@@ -1,0 +1,5 @@
+name = "Crash"
+logo = """"""
+binary_path = "something"
+args = []
+padding = [0, 0]

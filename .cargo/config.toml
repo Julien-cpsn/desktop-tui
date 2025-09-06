@@ -1,0 +1,8 @@
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = "z"
+lto = true # Enable Link Time Optimization
+codegen-units = 1 # Increase build time but increase optimisation. Default 16
+strip = true  # Automatically strip symbols from the binary

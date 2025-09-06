@@ -1,4 +1,5 @@
 use std::{env, fs};
+use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
 
@@ -11,10 +12,10 @@ pub struct Shortcut {
     pub position: Option<u32>
 }
 
-pub fn parse_shortcut_dir() -> anyhow::Result<Vec<Shortcut>> {
+pub fn parse_shortcut_dir(shortcut_path: PathBuf) -> anyhow::Result<Vec<Shortcut>> {
     let mut desktop_entries = Vec::<Shortcut>::new();
 
-    for entry in WalkDir::new(env::current_dir()?.join("shortcuts")).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(env::current_dir()?.join(shortcut_path)).into_iter().filter_map(|e| e.ok()) {
         let entry_path = entry.path();
         if entry_path.is_dir() || entry_path.extension().is_none() || !entry_path.extension().unwrap().to_str().unwrap().ends_with("toml") {
             continue;

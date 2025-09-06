@@ -4,16 +4,21 @@ mod keyboard;
 mod desktop;
 mod shortcut;
 mod utils;
+mod args;
 
 use crate::desktop::MyDesktop;
 use crate::shortcut::parse_shortcut_dir;
 use appcui::backend::Type;
 use appcui::prelude::{App, Theme};
 use appcui::system::Themes;
+use clap::Parser;
+use crate::args::Args;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let desktop_shortcuts = parse_shortcut_dir()?;
+    let args = Args::parse();
+    
+    let desktop_shortcuts = parse_shortcut_dir(args.shortcut_dir)?;
 
     let theme = Theme::new(Themes::Default);
 

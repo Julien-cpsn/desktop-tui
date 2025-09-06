@@ -1,4 +1,8 @@
-# Desktop-TUI
+Desktop-TUI 🖥️
+===
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub Release](https://img.shields.io/github/v/release/julien-cpsn/desktop-tui?link=https%3A%2F%2Fgithub.com%2FJulien-cpsn%2Fdesktop-tuiC%2Freleases%2Flatest)
 
 A desktop environment without graphics (tmux-like).
 

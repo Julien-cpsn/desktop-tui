@@ -5,10 +5,10 @@ use walkdir::WalkDir;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Shortcut {
     pub name: String,
-    pub logo: String,
     pub binary_path: String,
     pub args: Vec<String>,
     pub padding: Option<(i32, i32)>,
+    pub position: Option<u32>
 }
 
 pub fn parse_shortcut_dir() -> anyhow::Result<Vec<Shortcut>> {
@@ -31,6 +31,8 @@ pub fn parse_shortcut_dir() -> anyhow::Result<Vec<Shortcut>> {
 
         desktop_entries.push(desktop_entry);
     }
+
+    desktop_entries.sort_by(|a, b| a.position.unwrap_or(99).cmp(&b.position.unwrap_or(99)));
 
     Ok(desktop_entries)
 }

@@ -1,10 +1,13 @@
 use crate::terminal_emulation::TerminalParser;
+use anyhow::anyhow;
+use appcui::dialogs::{Location, SelectFolderDialogFlags};
 use appcui::graphics::{CharAttribute, CharFlags, Character, Color, Size, Surface};
 use appcui::prelude::window::Flags;
 use appcui::prelude::{canvas, Alignment, Canvas, EventProcessStatus, Handle, LayoutBuilder, OnResize, TimerEvents, Window};
-use std::ffi::OsStr;
-use std::time::Duration;
 use async_channel::{Receiver, Sender};
+use std::ffi::OsStr;
+use std::path::Path;
+use std::time::Duration;
 use virtual_terminal::{Command, Input, Output};
 
 #[CustomControl(overwrite = OnKeyPressed)]
@@ -24,7 +27,7 @@ pub struct TuiWindow {
 }
 
 impl TuiWindow {
-    pub fn new<S, I>(app_name: &str, program: S, args: I, padding: Option<(i32, i32)>) -> Self where S: AsRef<OsStr>, I: IntoIterator<Item = S> {
+    pub fn new<S, I>(app_name: &str, program: S, args: I, padding: Option<(i32, i32)>) -> anyhow::Result<Self> where S: AsRef<OsStr>, I: IntoIterator<Item = S> {
         let size = Size {
             width: 100,
             height: 25,
@@ -58,8 +61,15 @@ impl TuiWindow {
             Flags::Sizeable
         );
 
-        let cmd = Command::new(program)
-            .args(args)
+        let modified_program = replace_file_path(program.as_ref().to_str().unwrap().to_string())?;
+        let mut modified_args: Vec<String> = Vec::new();
+
+        for arg in args {
+            modified_args.push(replace_file_path(arg.as_ref().to_str().unwrap().to_string())?);
+        }
+
+        let cmd = Command::new(modified_program)
+            .args(modified_args)
             .terminal_size((
                 inner_size.width as usize,
                 inner_size.height as usize
@@ -96,9 +106,11 @@ impl TuiWindow {
             surface.write_string(0, 0, "Loading...", CharAttribute::default(), false);
         }
 
-        if let Some(timer) = tui_win.timer() {
-            timer.start(Duration::from_millis(100));
-        }
+        let timer = match tui_win.timer() {
+            Some(t) => t,
+            None => return Err(anyhow!("Failed to get timer"))
+        };
+        timer.start(Duration::from_millis(25));
 
         tui_win.custom_keyboard_control = tui_win.add(CustomKeyboardControl {
             should_exit: false,
@@ -109,7 +121,13 @@ impl TuiWindow {
 
         tokio::spawn(cmd.run());
 
-        tui_win
+        let c = tui_win.canvas;
+        if let Some(cv) = tui_win.control_mut(c) {
+            let surface = cv.drawing_surface_mut();
+            surface.clear(Character::new(' ', Color::Transparent, Color::Transparent, CharFlags::None));
+        }
+
+        Ok(tui_win)
     }
 
     pub fn clear_canva(&mut self) {
@@ -182,13 +200,24 @@ impl TimerEvents for TuiWindow {
                     dialogs::error("An error occurred", &error);
 
                     self.close();
-
                     EventProcessStatus::Processed
                 },
-                Output::Terminated(_) => EventProcessStatus::Ignored
+                Output::Terminated(_) => {
+                    self.close();
+                    EventProcessStatus::Processed
+                }
             }
             Err(_) => EventProcessStatus::Ignored
         }
     }
 }
 
+fn replace_file_path(arg: String) -> anyhow::Result<String> {
+    match arg.contains("<file_path>") {
+        false => Ok(arg),
+        true => match dialogs::select_folder("Select file", Location::Path(Path::new(env!("HOME"))), SelectFolderDialogFlags::Icons) {
+            None => Err(anyhow!("No file selected")),
+            Some(file_path) => Ok(arg.replace("<file_path>", file_path.to_str().unwrap()))
+        }
+    }
+}

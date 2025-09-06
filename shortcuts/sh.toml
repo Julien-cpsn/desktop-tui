@@ -1,0 +1,5 @@
+name = "Terminal"
+binary_path = "sh" # Cashes at close
+args = []
+padding = [0, 0]
+position = 5

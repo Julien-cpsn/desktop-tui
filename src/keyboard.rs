@@ -4,7 +4,7 @@ use appcui::prelude::{EventProcessStatus, KeyCode, OnKeyPressed};
 use virtual_terminal::Input;
 
 impl OnKeyPressed for CustomKeyboardControl {
-    fn on_key_pressed(&mut self, key: Key, _character: char) -> EventProcessStatus {
+    fn on_key_pressed(&mut self, key: Key, character: char) -> EventProcessStatus {
         if !self.has_focus() {
             return EventProcessStatus::Ignored;
         }
@@ -14,7 +14,7 @@ impl OnKeyPressed for CustomKeyboardControl {
             self.should_exit = true;
         }
         else {
-            if let Some(data) = to_escape_sequence_vec(key) {
+            if let Some(data) = to_escape_sequence_vec(key, character) {
                 self.tx
                     .send_blocking(Input::Data(data))
                     .ok();
@@ -25,7 +25,7 @@ impl OnKeyPressed for CustomKeyboardControl {
     }
 }
 
-pub fn to_escape_sequence_vec(key: Key) -> Option<Vec<u8>> {
+pub fn to_escape_sequence_vec(key: Key, character: char) -> Option<Vec<u8>> {
     use KeyModifier as KM;
 
     let mut seq = Vec::new();
@@ -82,20 +82,22 @@ pub fn to_escape_sequence_vec(key: Key) -> Option<Vec<u8>> {
         KeyCode::F11 => return Some(csi_mod_tilde(23, mod_param)),
         KeyCode::F12 => return Some(csi_mod_tilde(24, mod_param)),
 
-        KeyCode::None => return None,
-
-        _ => {
-            use appcui::prelude::KeyCode::*;
-
+        KeyCode::A | KeyCode::B | KeyCode::C | KeyCode::D | KeyCode::E |
+        KeyCode::F | KeyCode::G | KeyCode::H | KeyCode::I | KeyCode::J |
+        KeyCode::K | KeyCode::L | KeyCode::M | KeyCode::N | KeyCode::O |
+        KeyCode::P | KeyCode::Q | KeyCode::R | KeyCode::S | KeyCode::T |
+        KeyCode::U | KeyCode::V | KeyCode::W | KeyCode::X | KeyCode::Y | KeyCode::Z |
+        KeyCode::N0 | KeyCode::N1 | KeyCode::N2 | KeyCode::N3 | KeyCode::N4 |
+        KeyCode::N5 | KeyCode::N6 | KeyCode::N7 | KeyCode::N8 | KeyCode::N9 | KeyCode::None => {
             let c = match key.code {
-                A => b'a', B => b'b', C => b'c', D => b'd', E => b'e',
-                F => b'f', G => b'g', H => b'h', I => b'i', J => b'j',
-                K => b'k', L => b'l', M => b'm', N => b'n', O => b'o',
-                P => b'p', Q => b'q', R => b'r', S => b's', T => b't',
-                U => b'u', V => b'v', W => b'w', X => b'x', Y => b'y', Z => b'z',
-                N0 => b'0', N1 => b'1', N2 => b'2', N3 => b'3', N4 => b'4',
-                N5 => b'5', N6 => b'6', N7 => b'7', N8 => b'8', N9 => b'9',
-                _ => unreachable!(),
+                KeyCode::A => b'a', KeyCode::B => b'b', KeyCode::C => b'c', KeyCode::D => b'd', KeyCode::E => b'e',
+                KeyCode::F => b'f', KeyCode::G => b'g', KeyCode::H => b'h', KeyCode::I => b'i', KeyCode::J => b'j',
+                KeyCode::K => b'k', KeyCode::L => b'l', KeyCode::M => b'm', KeyCode::N => b'n', KeyCode::O => b'o',
+                KeyCode::P => b'p', KeyCode::Q => b'q', KeyCode::R => b'r', KeyCode::S => b's', KeyCode::T => b't',
+                KeyCode::U => b'u', KeyCode::V => b'v', KeyCode::W => b'w', KeyCode::X => b'x', KeyCode::Y => b'y', KeyCode::Z => b'z',
+                KeyCode::N0 => b'0', KeyCode::N1 => b'1', KeyCode::N2 => b'2', KeyCode::N3 => b'3', KeyCode::N4 => b'4',
+                KeyCode::N5 => b'5', KeyCode::N6 => b'6', KeyCode::N7 => b'7', KeyCode::N8 => b'8', KeyCode::N9 => b'9',
+                _ => character as u8,
             };
 
             if key.modifier.contains(KM::Ctrl) {

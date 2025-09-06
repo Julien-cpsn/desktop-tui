@@ -1,0 +1,5 @@
+name = "Text editor"
+binary_path = "hx"
+args = ["./Cargo.toml"]
+padding = [0, 0]
+position = 3

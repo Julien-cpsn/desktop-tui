@@ -1,5 +1,5 @@
 name = "Resources"
-logo = """"""
 binary_path = "btop"
 args = []
 padding = [0, 0]
+position = 2

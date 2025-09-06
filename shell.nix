@@ -26,6 +26,7 @@ in
       bluetui
       btop
       tenki
+      helix
     ];
 
     #LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";

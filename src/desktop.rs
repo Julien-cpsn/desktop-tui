@@ -9,7 +9,7 @@ use std::collections::HashMap;
 #[Desktop(
     events = [MenuEvents, DesktopEvents],
     overwrite = OnPaint,
-    commands = [Exit, NoArrange, Cascade, Vertical, Horizontal, Grid, AppVisibilityToggle, OpenApp, CloseApp]
+    commands = [Exit, NoArrange, Cascade, Vertical, Horizontal, Grid, AppVisibilityToggle, OpenApp, CloseApp, None]
 )]
 pub struct MyDesktop {
     pub arrange_method: Option<desktop::ArrangeWindowsMethod>,
@@ -35,7 +35,7 @@ impl MyDesktop {
         }
     }
     
-    pub fn create_window(&mut self, index: usize) {
+    pub fn create_window(&mut self, index: usize) -> anyhow::Result<()> {
         let app_name = self.shortcuts[index].name.clone();
         let command = self.shortcuts[index].binary_path.clone();
         let args = self.shortcuts[index].args.clone();
@@ -46,10 +46,12 @@ impl MyDesktop {
             command,
             args,
             padding
-        );
+        )?;
 
         let win_handle = self.add_window(win);
         self.app_windows.insert(index, win_handle);
+
+        Ok(())
     }
 }
 
@@ -115,7 +117,10 @@ impl DesktopEvents for MyDesktop {
 
         self.arrange_menu = self.register_menu(menu);
 
-        let menu = Menu::new("|");
+        let mut menu = Menu::new("|");
+
+        menu.add(Command::new("", Key::None, Commands::None));
+
         self.sep = self.register_menu(menu);
 
         let shortcuts = self.shortcuts.clone();
@@ -159,8 +164,8 @@ impl MenuEvents for MyDesktop {
                         None => {
                             match command {
                                 Commands::OpenApp => {
-                                    self.create_window(index);
-                                }
+                                    self.create_window(index).ok();
+                                },
                                 _ => {}
                             }
 
@@ -193,7 +198,9 @@ impl MenuEvents for MyDesktop {
                         }
                         else {
                             match command {
-                                Commands::OpenApp => self.create_window(index),
+                                Commands::OpenApp => {
+                                    self.create_window(index).ok();
+                                },
                                 Commands::CloseApp => {},
                                 _ => {}
                             }

@@ -1,5 +1,4 @@
 name = "Internet state"
-logo = """"""
 binary_path = "gping"
 args = ["8.8.8.8"]
 padding = [0, 0]

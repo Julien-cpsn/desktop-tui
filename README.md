@@ -20,6 +20,12 @@ Features:
 
 ## How to use
 
+### Install
+
+```shell
+cargo install desktop-tui
+```
+
 ### Compile
 
 ```shell
@@ -32,14 +38,16 @@ cargo build --release
 
 ### Run
 
+You can replace `cargo run --` with `desktop-tui`
+
 ```shell
-cargo run <shortcut_folder_path>
+cargo run -- <shortcut_folder_path>
 ```
 
 Or in release :
 
 ```shell
-cargo run --release <shortcut_folder_path>
+cargo run --release -- <shortcut_folder_path>
 ```
 
 ## Shortcut file

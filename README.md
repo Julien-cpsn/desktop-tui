@@ -14,7 +14,7 @@ Features:
 - [x] Change tilling options
 - [x] Handle application error
 - [x] Select a file or a folder to then use it as an application or command argument
-- [ ] Use the Crossterm backend (currently using ncurses but colors are wrong)
+- [ ] Use the Crossterm backend when bugs are resolved. currently using ncurses but colors are wrong.
 - [ ] Handle GNU applications and commands crash
 
 ![demo](./demo.gif)

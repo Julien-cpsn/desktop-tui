@@ -2,9 +2,15 @@
 name = "desktop-tui"
 version = "0.1.0"
 edition = "2024"
+authors = ["julien-cpsn"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://github.com/Julien-cpsn/desktop-tu"
+homepage = "https://github.com/Julien-cpsn/desktop-tu"
+repository = "https://github.com/Julien-cpsn/desktop-tu"
+keywords = ["Desktop", "Environment", "TUI", "AppCUI-rs"]
 
 [dependencies]
-
 appcui = { version = "0.3.4", features = ["CROSSTERM", "TRUE_COLORS"] }
 
 virtual-terminal = "0.1.4"

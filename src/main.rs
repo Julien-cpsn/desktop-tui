@@ -17,7 +17,7 @@ use crate::args::Args;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    
+
     let desktop_shortcuts = parse_shortcut_dir(args.shortcut_dir)?;
 
     let theme = Theme::new(Themes::Default);
@@ -26,6 +26,7 @@ async fn main() -> anyhow::Result<()> {
     //theme.text.enphasized_2 = CharAttribute::new(Color::Red, Color::Green, CharFlags::None);
     //theme.desktop.character = Character::new(' ', Color::RGB(255, 255, 255), Color::RGB(85, 85, 85), CharFlags::None);
 
+    // TODO: Fix Crossterm backend
     let app = App::with_backend(Type::NcursesTerminal)
         .desktop(MyDesktop::new(desktop_shortcuts))
         .menu_bar()

@@ -1,5 +1,15 @@
+# Window name
 name = "Text editor"
+
+# Command to execute
 binary_path = "hx"
-args = ["./Cargo.toml"]
+
+# Each command argument
+# <file_path> will be replaced by a path selected in a dialog
+args = ["<file_path>"]
+
+# Pad inner window
 padding = [0, 0]
+
+# Shortcut position on the action bar
 position = 3

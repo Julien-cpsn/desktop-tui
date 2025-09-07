@@ -63,8 +63,8 @@ name = "Text editor"
 binary_path = "hx"
 
 # Each command argument
-# <file_path> will be replaced by a path selected in a dialog
-args = ["<file_path>"]
+# <FILE_PATH> or <FOLDER_PATH> will be replaced by a path selected in a dialog
+args = ["<FILE_PATH>"]
 
 # Pad inner window
 padding = [0, 0]

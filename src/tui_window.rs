@@ -1,6 +1,6 @@
 use crate::terminal_emulation::TerminalParser;
 use anyhow::anyhow;
-use appcui::dialogs::{Location, SelectFolderDialogFlags};
+use appcui::dialogs::{Location, OpenFileDialogFlags, SelectFolderDialogFlags};
 use appcui::graphics::{CharAttribute, CharFlags, Character, Color, Size, Surface};
 use appcui::prelude::window::Flags;
 use appcui::prelude::{canvas, Alignment, Canvas, EventProcessStatus, Handle, LayoutBuilder, OnResize, TimerEvents, Window};
@@ -61,11 +61,14 @@ impl TuiWindow {
             Flags::Sizeable
         );
 
-        let modified_program = replace_file_path(program.as_ref().to_str().unwrap().to_string())?;
+        let mut modified_program = replace_file_path(program.as_ref().to_str().unwrap().to_string())?;
+        modified_program = replace_folder_path(modified_program)?;
         let mut modified_args: Vec<String> = Vec::new();
 
         for arg in args {
-            modified_args.push(replace_file_path(arg.as_ref().to_str().unwrap().to_string())?);
+            let mut modified_arg = replace_file_path(arg.as_ref().to_str().unwrap().to_string())?;
+            modified_arg = replace_folder_path(modified_arg)?;
+            modified_args.push(modified_arg);
         }
 
         let cmd = Command::new(modified_program)
@@ -213,11 +216,31 @@ impl TimerEvents for TuiWindow {
 }
 
 fn replace_file_path(arg: String) -> anyhow::Result<String> {
-    match arg.contains("<file_path>") {
+    match arg.contains("<FILE_PATH>") {
         false => Ok(arg),
-        true => match dialogs::select_folder("Select file", Location::Path(Path::new(env!("HOME"))), SelectFolderDialogFlags::Icons) {
+        true => match dialogs::open(
+            "Select file",
+            "",
+            Location::Path(Path::new(env!("HOME"))),
+            None,
+            OpenFileDialogFlags::Icons | OpenFileDialogFlags::CheckIfFileExists
+        ) {
             None => Err(anyhow!("No file selected")),
-            Some(file_path) => Ok(arg.replace("<file_path>", file_path.to_str().unwrap()))
+            Some(file_path) => Ok(arg.replace("<FILE_PATH>", file_path.to_str().unwrap()))
+        }
+    }
+}
+
+fn replace_folder_path(arg: String) -> anyhow::Result<String> {
+    match arg.contains("<FOLDER_PATH>") {
+        false => Ok(arg),
+        true => match dialogs::select_folder(
+            "Select folder",
+            Location::Path(Path::new(env!("HOME"))),
+            SelectFolderDialogFlags::Icons
+        ) {
+            None => Err(anyhow!("No folder selected")),
+            Some(file_path) => Ok(arg.replace("<FOLDER_PATH>", file_path.to_str().unwrap()))
         }
     }
 }

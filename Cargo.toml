@@ -12,7 +12,7 @@ repository = "https://github.com/Julien-cpsn/desktop-tui"
 keywords = ["Desktop", "Environment", "TUI", "AppCUI-rs"]
 
 [dependencies]
-appcui = { version = "0.3.4", features = ["CROSSTERM", "TRUE_COLORS"] }
+appcui = { version = "0.3.5", features = ["CROSSTERM", "TRUE_COLORS"] }
 
 virtual-terminal = "0.1.4"
 

@@ -96,9 +96,9 @@ checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 
 [[package]]
 name = "appcui"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6234a433ed64111ce9ac1c277da5fd428a38544f39d2404381227100ebb4f74"
+checksum = "b6681065ec19eb66f3bf9cc1f2efb3af17612cc403491d6da87a50c36dfeb6e1"
 dependencies = [
  "EnumBitFlags",
  "appcui_proc_macro",
@@ -120,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "appcui_proc_macro"
-version = "0.1.9"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2ea6b77d347e30cd6e93b93712ca938c71b01d501fd17ab69cf686c7e8ba60d"
+checksum = "3d8689b97e90f8f5518e88baf0c3f22d8eb3f3638d2290bfa68ccbd4f268d10e"
 
 [[package]]
 name = "async-channel"

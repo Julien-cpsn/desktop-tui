@@ -72,3 +72,17 @@ padding = [0, 0]
 # Shortcut position on the action bar
 position = 3
 ```
+
+## Star history
+
+<a href="https://www.star-history.com/#julien-cpsn/desktop-tui&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=julien-cpsn/desktop-tui&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=julien-cpsn/desktop-tui&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=julien-cpsn/desktop-tui&type=Date" />
+ </picture>
+</a>
+
+## License
+
+The MIT license for this project can be seen [here](./LICENSE)

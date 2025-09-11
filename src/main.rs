@@ -6,6 +6,7 @@ mod shortcut;
 mod utils;
 mod args;
 
+use std::process::exit;
 use crate::desktop::MyDesktop;
 use crate::shortcut::parse_shortcut_dir;
 use appcui::backend::Type;
@@ -36,5 +37,5 @@ async fn main() -> anyhow::Result<()> {
 
     app.run();
 
-    Ok(())
+    exit(0);
 }

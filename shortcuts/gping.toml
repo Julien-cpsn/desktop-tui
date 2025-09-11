@@ -1,4 +1,14 @@
 name = "Internet state"
-binary_path = "gping"
+
+command = "gping"
 args = ["8.8.8.8"]
+
+[taskbar]
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
 padding = [0, 0]

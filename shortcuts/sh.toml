@@ -1,5 +1,15 @@
 name = "Terminal"
-binary_path = "sh" # Cashes at close
+
+command = "sh"
 args = []
-padding = [0, 0]
+
+[taskbar]
 position = 5
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
+padding = [0, 0]

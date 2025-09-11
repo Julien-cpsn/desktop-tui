@@ -1,5 +1,16 @@
 name = "ATAC"
-binary_path = "atac"
+
+command = "atac"
 args = ["--dry-run"]
-padding = [0, -1]
+
+[taskbar]
 position = 0
+commands = []
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
+padding = [0, -1]

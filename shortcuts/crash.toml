@@ -1,4 +1,14 @@
 name = "Crash"
-binary_path = "something"
+
+command = "something"
 args = []
+
+[taskbar]
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
 padding = [0, 0]

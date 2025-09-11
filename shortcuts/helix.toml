@@ -2,14 +2,33 @@
 name = "Text editor"
 
 # Command to execute
-binary_path = "hx"
-
+command = "hx"
 # Each command argument
-# <FILE_PATH> or <FOLDER_PATH> will be replaced by a path selected in a dialog
-args = ["<FILE_PATH>"]
+args = []
 
-# Pad inner window
-padding = [0, 0]
-
+[taskbar]
 # Shortcut position on the action bar
 position = 3
+
+[[taskbar.additional_commands]]
+# Command name
+name = "Open folder"
+# Command to execute
+command = "hx"
+# <FILE_PATH> or <FOLDER_PATH> will be replaced by a path selected in a dialog
+args = ["<FOLDER_PATH>"]
+
+[[taskbar.additional_commands]]
+name = "Open file"
+command = "hx"
+args = ["<FILE_PATH>"]
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+size = { width = 10, height = 5 }
+
+[terminal]
+# Pad inner window
+padding = [0, 0]

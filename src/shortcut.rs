@@ -1,15 +1,55 @@
 use std::{env, fs};
 use std::path::PathBuf;
+use nestify::nest;
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Shortcut {
-    pub name: String,
-    pub binary_path: String,
-    pub args: Vec<String>,
-    pub padding: Option<(i32, i32)>,
-    pub position: Option<u32>
+nest! {
+    #[derive(Clone, Debug, Serialize, Deserialize)]
+    pub struct Shortcut {
+        pub name: String,
+
+        pub command: String,
+
+        #[serde(default)]
+        pub args: Vec<String>,
+
+        pub taskbar:
+            #[derive(Clone, Debug, Serialize, Deserialize)]
+            pub struct TaskbarOptions {
+                pub position: Option<u32>,
+                #[serde(default)]
+                pub additional_commands: Vec<
+                    #[derive(Clone, Debug, Serialize, Deserialize)]
+                    pub struct TaskbarCommand {
+                        pub name: String,
+                        pub command: String,
+                        pub args: Vec<String>,
+                    }
+                >
+            },
+
+        pub window:
+            #[derive(Clone, Debug, Serialize, Deserialize)]
+            pub struct WindowOptions {
+                pub resizable: bool,
+                pub close_button: bool,
+                pub fixed_position: bool,
+                pub size: Option<
+                    #[derive(Clone, Debug, Serialize, Deserialize)]
+                    pub struct WindowSize {
+                        pub width: u32,
+                        pub height: u32,
+                    }
+                >
+            },
+
+        pub terminal:
+            #[derive(Clone, Debug, Serialize, Deserialize)]
+            pub struct TerminalOptions {
+                pub padding: Option<(i32, i32)>
+            }
+    }
 }
 
 pub fn parse_shortcut_dir(shortcut_path: PathBuf) -> anyhow::Result<Vec<Shortcut>> {
@@ -33,7 +73,13 @@ pub fn parse_shortcut_dir(shortcut_path: PathBuf) -> anyhow::Result<Vec<Shortcut
         desktop_entries.push(desktop_entry);
     }
 
-    desktop_entries.sort_by(|a, b| a.position.unwrap_or(99).cmp(&b.position.unwrap_or(99)));
+    desktop_entries
+        .sort_by(
+            |a, b|
+                a.taskbar.position
+                .unwrap_or(99)
+                .cmp(&b.taskbar.position.unwrap_or(99))
+        );
 
     Ok(desktop_entries)
 }

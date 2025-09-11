@@ -9,6 +9,7 @@ use std::ffi::OsStr;
 use std::path::Path;
 use std::time::Duration;
 use virtual_terminal::{Command, Input, Output};
+use crate::shortcut::{TerminalOptions, WindowOptions, WindowSize};
 
 #[CustomControl(overwrite = OnKeyPressed)]
 pub struct CustomKeyboardControl {
@@ -27,18 +28,25 @@ pub struct TuiWindow {
 }
 
 impl TuiWindow {
-    pub fn new<S, I>(app_name: &str, program: S, args: I, padding: Option<(i32, i32)>) -> anyhow::Result<Self> where S: AsRef<OsStr>, I: IntoIterator<Item = S> {
-        let size = Size {
-            width: 100,
-            height: 25,
-        };
+    pub fn new<S, I>(
+        app_name: &str,
+        program: S,
+        args: I,
+        window_options: WindowOptions,
+        terminal_options: TerminalOptions,
+    ) -> anyhow::Result<Self> where S: AsRef<OsStr>, I: IntoIterator<Item = S> {
+        let window_size = window_options.size
+            .unwrap_or(WindowSize {
+                width: 100,
+                height: 25,
+            });
 
         let mut x = 0;
         let mut y = 0;
         let mut horizontal_adjustment: i32 = 2;
         let mut vertical_adjustment: i32 = 2;
 
-        if let Some(padding) = padding {
+        if let Some(padding) = terminal_options.padding {
             x = padding.0;
             y = padding.1;
 
@@ -47,18 +55,32 @@ impl TuiWindow {
         }
 
         let inner_size = Size {
-            width: size.width.saturating_sub(horizontal_adjustment as u32),
-            height: size.height.saturating_sub(vertical_adjustment as u32),
+            width: window_size.width.saturating_sub(horizontal_adjustment as u32),
+            height: window_size.height.saturating_sub(vertical_adjustment as u32),
         };
+
+        let mut window_flags = Flags::None;
+
+        if window_options.resizable {
+            window_flags |= Flags::Sizeable;
+        }
+
+        if !window_options.close_button {
+            window_flags |= Flags::NoCloseButton;
+        }
+
+        if window_options.fixed_position {
+            window_flags |= Flags::FixedPosition;
+        }
 
         let win = Window::new(
             app_name,
             LayoutBuilder::new()
                 .alignment(Alignment::Center)
-                .width(size.width)
-                .height(size.height)
+                .width(window_size.width)
+                .height(window_size.height)
                 .build(),
-            Flags::Sizeable
+            window_flags
         );
 
         let mut modified_program = replace_file_path(program.as_ref().to_str().unwrap().to_string())?;
@@ -81,11 +103,16 @@ impl TuiWindow {
         let rx = cmd.out_rx();
         let tx = cmd.in_tx();
 
+        tx.send_blocking(Input::Resize((
+            inner_size.width as usize,
+            inner_size.height as usize
+        )))?;
+
         let mut tui_win = Self {
             base: win,
             canvas: Handle::None,
             custom_keyboard_control: Handle::None,
-            terminal_parser: TerminalParser::new(size.width, size.height),
+            terminal_parser: TerminalParser::new(window_size.width, window_size.height),
             horizontal_adjustment: horizontal_adjustment  as u32,
             vertical_adjustment: vertical_adjustment as u32,
         };
@@ -140,6 +167,15 @@ impl TuiWindow {
             surface.clear(Character::with_attributes(' ', CharAttribute::new(Color::White, Color::Black, CharFlags::None)));
         }
     }
+
+    pub fn close_command(&mut self) {
+        let custom_keyboard_control = self.custom_keyboard_control;
+        let control = self.control_mut(custom_keyboard_control).unwrap();
+        control.tx.send_blocking(Input::Terminate).ok();
+        control.tx.close();
+        control.rx.close();
+        self.close();
+    }
 }
 
 impl TimerEvents for TuiWindow {
@@ -151,7 +187,7 @@ impl TimerEvents for TuiWindow {
         };
 
         if should_close {
-            self.close();
+            self.close_command();
             return EventProcessStatus::Processed;
         }
 

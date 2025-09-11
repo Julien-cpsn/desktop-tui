@@ -1,7 +1,7 @@
 [package]
 name = "desktop-tui"
 description = "A desktop environment without graphics (tmux-like)"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2024"
 authors = ["julien-cpsn"]
 license = "MIT"
@@ -21,7 +21,8 @@ toml = "0.9.5"
 
 anyhow = "1.0.99"
 clap = { version = "4.5.47", features = ["derive"] }
-chrono = { version = "0.4.41", features = ["now"] }
+chrono = { version = "0.4.42", features = ["now"] }
 tokio = "1.47.1"
 async-channel = "2.5.0"
 walkdir = "2.5.0"
+nestify = "0.3.3"

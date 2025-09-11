@@ -2,14 +2,14 @@ use crate::desktop::mydesktop::Commands;
 use crate::shortcut::Shortcut;
 use crate::tui_window::TuiWindow;
 use crate::utils::time_to_string;
-use appcui::prelude::menu::{Command, SingleChoice};
+use appcui::prelude::menu::{Command, Separator, SingleChoice};
 use appcui::prelude::*;
 use std::collections::HashMap;
 
 #[Desktop(
     events = [MenuEvents, DesktopEvents],
     overwrite = OnPaint,
-    commands = [Exit, NoArrange, Cascade, Vertical, Horizontal, Grid, AppVisibilityToggle, OpenApp, CloseApp, None]
+    commands = [Exit, NoArrange, Cascade, Vertical, Horizontal, Grid, AppVisibilityToggle, OpenApp, CloseApp, AppCommand, None]
 )]
 pub struct MyDesktop {
     pub arrange_method: Option<desktop::ArrangeWindowsMethod>,
@@ -35,20 +35,20 @@ impl MyDesktop {
         }
     }
     
-    pub fn create_window(&mut self, index: usize) -> anyhow::Result<()> {
+    pub fn create_window(&mut self, index: usize, command: String, args: Vec<String>) -> anyhow::Result<()> {
         let app_name = self.shortcuts[index].name.clone();
-        let command = self.shortcuts[index].binary_path.clone();
-        let args = self.shortcuts[index].args.clone();
-        let padding = self.shortcuts[index].padding.clone();
+        let window = self.shortcuts[index].window.clone();
+        let terminal = self.shortcuts[index].terminal.clone();
 
-        let win = TuiWindow::new(
+        let window = TuiWindow::new(
             &app_name,
             command,
             args,
-            padding
+            window,
+            terminal,
         )?;
 
-        let win_handle = self.add_window(win);
+        let win_handle = self.add_window(window);
         self.app_windows.insert(index, win_handle);
 
         Ok(())
@@ -131,6 +131,14 @@ impl DesktopEvents for MyDesktop {
             menu.add(Command::new("Start", Key::None, Commands::OpenApp));
             menu.add(Command::new("Close", Key::None, Commands::CloseApp));
 
+            if !shortcut.taskbar.additional_commands.is_empty() {
+                menu.add(Separator::new());
+            }
+
+            for command in &shortcut.taskbar.additional_commands {
+                menu.add(Command::new(&command.name, Key::None, Commands::AppCommand));
+            }
+
             self.app_menues[index] = self.register_menu(menu);
         }
     }
@@ -148,8 +156,16 @@ impl DesktopEvents for MyDesktop {
 impl MenuEvents for MyDesktop {
     fn on_command(&mut self, menu: Handle<Menu>, item: Handle<Command>, command: Commands) {
         match command {
-            Commands::Exit => self.close(),
-            Commands::OpenApp | Commands::CloseApp | Commands::AppVisibilityToggle => {
+            Commands::Exit => {
+                for window in self.app_windows.clone().values() {
+                    if let Some(win) = self.window_mut(*window) {
+                        win.close_command();
+                    }
+                }
+
+                self.close()
+            },
+            Commands::OpenApp | Commands::CloseApp | Commands::AppVisibilityToggle | Commands::AppCommand => {
                 let mut app = None;
 
                 for (index, app_menu) in self.app_menues.iter().enumerate() {
@@ -164,7 +180,20 @@ impl MenuEvents for MyDesktop {
                         None => {
                             match command {
                                 Commands::OpenApp => {
-                                    self.create_window(index).ok();
+                                    let command = self.shortcuts[index].command.clone();
+                                    let args = self.shortcuts[index].args.clone();
+                                    self.create_window(index, command, args).ok();
+                                },
+                                Commands::AppCommand => {
+                                    let shortcut = self.shortcuts[index].clone();
+                                    let item = self.menuitem_mut(menu, item).unwrap();
+
+                                    for command in shortcut.taskbar.additional_commands {
+                                        if item.caption() == command.name {
+                                            self.create_window(index, command.command, command.args).ok();
+                                            break;
+                                        }
+                                    }
                                 },
                                 _ => {}
                             }
@@ -190,7 +219,7 @@ impl MenuEvents for MyDesktop {
                                 }
                                 Commands::OpenApp => {}
                                 Commands::CloseApp => {
-                                    window.close();
+                                    window.close_command();
                                     self.app_windows.remove(&index);
                                 }
                                 _ => {}
@@ -199,9 +228,10 @@ impl MenuEvents for MyDesktop {
                         else {
                             match command {
                                 Commands::OpenApp => {
-                                    self.create_window(index).ok();
+                                    let command = self.shortcuts[index].command.clone();
+                                    let args = self.shortcuts[index].args.clone();
+                                    self.create_window(index, command, args).ok();
                                 },
-                                Commands::CloseApp => {},
                                 _ => {}
                             }
                         }
@@ -219,7 +249,6 @@ impl MenuEvents for MyDesktop {
 
     fn on_select(&mut self, _menu: Handle<Menu>, _item: Handle<SingleChoice>, command: Commands) {
         match command {
-            Commands::Exit => self.close(),
             Commands::NoArrange => self.arrange_method = None,
             Commands::Cascade => self.arrange_method = Some(desktop::ArrangeWindowsMethod::Cascade),
             Commands::Vertical => self.arrange_method = Some(desktop::ArrangeWindowsMethod::Vertical),

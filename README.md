@@ -60,7 +60,7 @@ Example `helix.toml` shortcut file:
 name = "Text editor"
 
 # Command to execute
-binary_path = "hx"
+command = "hx"
 
 # Each command argument
 # <FILE_PATH> or <FOLDER_PATH> will be replaced by a path selected in a dialog

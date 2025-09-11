@@ -1,5 +1,15 @@
 name = "Bluetooth"
-binary_path = "bluetui"
+
+command = "bluetui"
 args = []
-padding = [0, 0]
+
+[taskbar]
 position = 1
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
+padding = [0, 0]

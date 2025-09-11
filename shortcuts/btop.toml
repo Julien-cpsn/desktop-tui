@@ -1,5 +1,15 @@
 name = "Resources"
-binary_path = "btop"
+
+command = "btop"
 args = []
-padding = [0, 0]
+
+[taskbar]
 position = 2
+
+[window]
+resizable = true
+close_button = true
+fixed_position = false
+
+[terminal]
+padding = [0, 0]

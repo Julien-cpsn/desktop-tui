@@ -1,7 +1,7 @@
 [package]
 name = "desktop-tui"
 description = "A desktop environment without graphics (tmux-like)"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["julien-cpsn"]
 license = "MIT"

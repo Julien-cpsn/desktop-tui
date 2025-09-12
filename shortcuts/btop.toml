@@ -10,6 +10,7 @@ position = 2
 resizable = true
 close_button = true
 fixed_position = false
+size = { width = 82, height = 26 }
 
 [terminal]
 padding = [0, 0]

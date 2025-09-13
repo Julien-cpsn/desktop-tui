@@ -9,13 +9,14 @@ A desktop environment without graphics (tmux-like).
 
 Features:
 - [x] Parse shortcut files containing apps
+  - [x] Custom additional commands
+  - [x] Custom window options
+  - [x] Custom terminal options
 - [x] Display any application or command that uses stdout
-- [x] Move and resize windows
+  - [x] Move and resize windows
+  - [x] Handle and display application error
 - [x] Change tilling options
-- [x] Handle application error
-- [x] Select a file or a folder to then use it as an application or command argument
-- [ ] Use the Crossterm backend when bugs are resolved. currently using ncurses but colors are wrong.
-- [ ] Handle GNU applications and commands crash
+- [x] Can let the user select a file or a folder to use its path as a command argument
 
 ![demo](./demo.gif)
 
@@ -66,8 +67,10 @@ args = []
 
 [taskbar]
 # Shortcut position on the action bar
+# Optional
 position = 3
 
+# Optional
 [[taskbar.additional_commands]]
 # Command name
 name = "Open folder"
@@ -85,11 +88,14 @@ args = ["<FILE_PATH>"]
 resizable = true
 close_button = true
 fixed_position = false
+# Optional
 size = { width = 10, height = 5 }
 
 [terminal]
 # Pad inner window
 padding = [0, 0]
+# Optional
+background_color = { r = 30, g = 30, b = 30 }
 ```
 
 ## Star history

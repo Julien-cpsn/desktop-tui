@@ -8,8 +8,10 @@ args = []
 
 [taskbar]
 # Shortcut position on the action bar
+# Optional
 position = 3
 
+# Optional
 [[taskbar.additional_commands]]
 # Command name
 name = "Open folder"

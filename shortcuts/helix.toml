@@ -27,7 +27,6 @@ args = ["<FILE_PATH>"]
 resizable = true
 close_button = true
 fixed_position = false
-size = { width = 10, height = 5 }
 
 [terminal]
 # Pad inner window

@@ -1,6 +1,6 @@
 name = "ATAC"
 
-command = "atac"
+command = "/home/julien/.cargo/bin/atac"
 args = ["--dry-run"]
 
 [taskbar]
@@ -14,3 +14,4 @@ fixed_position = false
 
 [terminal]
 padding = [0, -1]
+background_color = { r = 30, g = 30, b = 30 }

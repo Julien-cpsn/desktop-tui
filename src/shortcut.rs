@@ -1,7 +1,7 @@
-use std::{env, fs};
-use std::path::PathBuf;
 use nestify::nest;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use std::{env, fs};
 use walkdir::WalkDir;
 
 nest! {
@@ -47,7 +47,16 @@ nest! {
         pub terminal:
             #[derive(Clone, Debug, Serialize, Deserialize)]
             pub struct TerminalOptions {
-                pub padding: Option<(i32, i32)>
+                pub padding: Option<(i32, i32)>,
+                // AppCUI-rs needs to add serde
+                pub background_color: Option<
+                    #[derive(Clone, Debug, Serialize, Deserialize)]
+                    pub struct BackgroundColor {
+                        pub r: u8,
+                        pub g: u8,
+                        pub b: u8,
+                    }
+                >
             }
     }
 }

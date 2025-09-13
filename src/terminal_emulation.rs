@@ -2,6 +2,8 @@ use appcui::prelude::{CharFlags, Character, Color, Surface};
 
 #[derive(Debug, Clone, Copy)]
 struct TerminalState {
+    default_foreground_color: Color,
+    default_background_color: Color,
     foreground: Color,
     background: Color,
     bold: bool,
@@ -12,18 +14,16 @@ struct TerminalState {
     cursor_y: i32,
 }
 
-impl Default for TerminalState {
-    fn default() -> Self {
-        Self {
-            foreground: Color::White,
-            background: Color::Black,
-            bold: false,
-            dim: false,
-            italic: false,
-            underline: false,
-            cursor_x: 0,
-            cursor_y: 0,
-        }
+impl TerminalState {
+    fn reset(&mut self) {
+        self.foreground = self.default_foreground_color;
+        self.background = self.default_background_color;
+        self.bold = false;
+        self.dim = false;
+        self.italic = false;
+        self.underline = false;
+        self.cursor_x = 0;
+        self.cursor_y = 0;
     }
 }
 
@@ -34,11 +34,22 @@ pub struct TerminalParser {
 }
 
 impl TerminalParser {
-    pub fn new(width: u32, height: u32) -> Self {
+    pub fn new(width: u32, height: u32, default_background_color: Color) -> Self {
         Self {
             width,
             height,
-            state: TerminalState::default(),
+            state: TerminalState {
+                default_foreground_color: Color::RGB(255, 255, 255),
+                default_background_color,
+                foreground: Color::RGB(255, 255, 255),
+                background: default_background_color,
+                bold: false,
+                dim: false,
+                italic: false,
+                underline: false,
+                cursor_x: 0,
+                cursor_y: 0,
+            }
         }
     }
 
@@ -67,6 +78,11 @@ impl TerminalParser {
         }
         
         surface
+    }
+
+    pub fn resize(&mut self, width: u32, height: u32) {
+        self.width = width;
+        self.height = height;
     }
 
     fn parse_ansi_sequence(&mut self, data: &[u8], surface: &mut Surface) -> usize {
@@ -148,7 +164,7 @@ impl TerminalParser {
                 // SGR (Select Graphic Rendition) - colors and attributes
                 if params.is_empty() {
                     // Reset all attributes
-                    self.state = TerminalState::default();
+                    self.state.reset();
                 }
                 else {
                     self.handle_sgr_params(params);
@@ -243,7 +259,7 @@ impl TerminalParser {
 
         while let Some(param) = iter.next() {
             match param {
-                0 => self.state = TerminalState::default(), // Reset
+                0 => self.state.reset(), // Reset
                 1 => self.state.bold = true,
                 2 => self.state.dim = true,
                 3 => self.state.italic = true,
@@ -254,6 +270,9 @@ impl TerminalParser {
                 }
                 23 => self.state.italic = false,
                 24 => self.state.underline = false,
+
+                39 => self.state.foreground = self.state.default_foreground_color,
+                49 => self.state.background = self.state.default_background_color,
 
                 // 16-color standard + bright
                 30..=37 => self.state.foreground = ansi_16_color(param - 30, false),
@@ -280,16 +299,14 @@ impl TerminalParser {
                             }
                             2 => {
                                 // Truecolor: 38;2;<r>;<g>;<b> or 48;2;<r>;<g>;<b>
-                                let (r, g, b) = (
-                                    iter.next().unwrap_or(0),
-                                    iter.next().unwrap_or(0),
-                                    iter.next().unwrap_or(0),
-                                );
-                                let color = Color::RGB(r as u8, g as u8, b as u8);
-                                if is_foreground {
-                                    self.state.foreground = color;
-                                } else {
-                                    self.state.background = color;
+                                if let (Some(r), Some(g), Some(b)) = (iter.next(), iter.next(), iter.next()) {
+                                    let color = Color::RGB(r as u8, g as u8, b as u8);
+
+                                    if is_foreground {
+                                        self.state.foreground = color;
+                                    } else {
+                                        self.state.background = color;
+                                    }
                                 }
                             }
                             _ => {}

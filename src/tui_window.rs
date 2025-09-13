@@ -9,7 +9,7 @@ use std::ffi::OsStr;
 use std::path::Path;
 use std::time::Duration;
 use virtual_terminal::{Command, Input, Output};
-use crate::shortcut::{TerminalOptions, WindowOptions, WindowSize};
+use crate::shortcut::{BackgroundColor, TerminalOptions, WindowOptions, WindowSize};
 
 #[CustomControl(overwrite = OnKeyPressed)]
 pub struct CustomKeyboardControl {
@@ -108,11 +108,20 @@ impl TuiWindow {
             inner_size.height as usize
         )))?;
 
+        let default_background_color = match terminal_options.background_color {
+            None => Color::RGB(0, 0, 0),
+            Some(BackgroundColor { r, g, b }) => Color::RGB(r, g, b),
+        };
+
         let mut tui_win = Self {
             base: win,
             canvas: Handle::None,
             custom_keyboard_control: Handle::None,
-            terminal_parser: TerminalParser::new(window_size.width, window_size.height),
+            terminal_parser: TerminalParser::new(
+                window_size.width,
+                window_size.height,
+                default_background_color
+            ),
             horizontal_adjustment: horizontal_adjustment  as u32,
             vertical_adjustment: vertical_adjustment as u32,
         };
@@ -128,11 +137,13 @@ impl TuiWindow {
             canvas::Flags::None
         ));
 
-        tui_win.clear_canva();
-
         let c = tui_win.canvas;
         if let Some(cv) = tui_win.control_mut(c) {
             let surface = cv.drawing_surface_mut();
+            surface.fill_rect(
+                Rect::new(0, 0, inner_size.width as i32, inner_size.height as i32),
+                Character::new(' ', Color::Transparent, default_background_color, CharFlags::None)
+            );
             surface.write_string(0, 0, "Loading...", CharAttribute::default(), false);
         }
 
@@ -158,14 +169,6 @@ impl TuiWindow {
         }
 
         Ok(tui_win)
-    }
-
-    pub fn clear_canva(&mut self) {
-        let c = self.canvas;
-        if let Some(cv) = self.control_mut(c) {
-            let surface = cv.drawing_surface_mut();
-            surface.clear(Character::with_attributes(' ', CharAttribute::new(Color::White, Color::Black, CharFlags::None)));
-        }
     }
 
     pub fn close_command(&mut self) {
@@ -230,7 +233,7 @@ impl TimerEvents for TuiWindow {
                             .ok();
                         cv.set_size(inner_size.width as u16, inner_size.height as u16);
                         cv.resize_surface(inner_size);
-                        self.clear_canva();
+                        self.terminal_parser.resize(inner_size.width, inner_size.height);
                     }
 
                     EventProcessStatus::Processed

@@ -89,7 +89,7 @@ pub fn to_escape_sequence_vec(key: Key, character: char) -> Option<Vec<u8>> {
         KeyCode::U | KeyCode::V | KeyCode::W | KeyCode::X | KeyCode::Y | KeyCode::Z |
         KeyCode::N0 | KeyCode::N1 | KeyCode::N2 | KeyCode::N3 | KeyCode::N4 |
         KeyCode::N5 | KeyCode::N6 | KeyCode::N7 | KeyCode::N8 | KeyCode::N9 | KeyCode::None => {
-            let c = match key.code {
+            let mut c = match key.code {
                 KeyCode::A => b'a', KeyCode::B => b'b', KeyCode::C => b'c', KeyCode::D => b'd', KeyCode::E => b'e',
                 KeyCode::F => b'f', KeyCode::G => b'g', KeyCode::H => b'h', KeyCode::I => b'i', KeyCode::J => b'j',
                 KeyCode::K => b'k', KeyCode::L => b'l', KeyCode::M => b'm', KeyCode::N => b'n', KeyCode::O => b'o',
@@ -99,6 +99,10 @@ pub fn to_escape_sequence_vec(key: Key, character: char) -> Option<Vec<u8>> {
                 KeyCode::N5 => b'5', KeyCode::N6 => b'6', KeyCode::N7 => b'7', KeyCode::N8 => b'8', KeyCode::N9 => b'9',
                 _ => character as u8,
             };
+
+            if key.modifier.contains(KM::Shift) {
+                c = c.to_ascii_uppercase();
+            }
 
             if key.modifier.contains(KM::Ctrl) {
                 // Ctrl+A → 0x01, etc.

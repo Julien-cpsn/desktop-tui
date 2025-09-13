@@ -27,12 +27,11 @@ async fn main() -> anyhow::Result<()> {
     //theme.text.enphasized_2 = CharAttribute::new(Color::Red, Color::Green, CharFlags::None);
     //theme.desktop.character = Character::new(' ', Color::RGB(255, 255, 255), Color::RGB(85, 85, 85), CharFlags::None);
 
-    // TODO: Fix Crossterm backend
-    let app = App::with_backend(Type::NcursesTerminal)
+    let app = App::with_backend(Type::CrossTerm)
         .desktop(MyDesktop::new(desktop_shortcuts))
         .menu_bar()
         .theme(theme)
-        .color_schema(true)
+        .color_schema(false)
         .build()?;
 
     app.run();

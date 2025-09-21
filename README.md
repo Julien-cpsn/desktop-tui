@@ -17,6 +17,7 @@ Features:
   - [x] Handle and display application error
 - [x] Change tilling options
 - [x] Can let the user select a file or a folder to use its path as a command argument
+- [x] Clock
 
 ![demo](./demo.gif)
 

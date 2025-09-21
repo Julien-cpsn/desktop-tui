@@ -2,23 +2,28 @@ use crate::desktop::mydesktop::Commands;
 use crate::shortcut::Shortcut;
 use crate::tui_window::TuiWindow;
 use crate::utils::time_to_string;
-use appcui::prelude::menu::{Command, Separator, SingleChoice};
+use appcui::prelude::appbar::MenuButton;
+use appcui::prelude::menu::{Command, SingleChoice};
 use appcui::prelude::*;
+use appcui::ui::appbar::Side;
 use std::collections::HashMap;
+use std::time::Duration;
 
 #[Desktop(
-    events = [MenuEvents, DesktopEvents],
+    events = [AppBarEvents, MenuEvents, DesktopEvents, TimerEvents],
     overwrite = OnPaint,
     commands = [Exit, NoArrange, Cascade, Vertical, Horizontal, Grid, AppVisibilityToggle, OpenApp, CloseApp, AppCommand, None]
 )]
 pub struct MyDesktop {
     pub arrange_method: Option<desktop::ArrangeWindowsMethod>,
-    pub desktop_menu: Handle<Menu>,
-    pub arrange_menu: Handle<Menu>,
-    pub sep: Handle<Menu>,
+    pub desktop_menu: Handle<MenuButton>,
+    pub arrange_menu: Handle<MenuButton>,
+    pub separator: Handle<appbar::Separator>,
     pub app_menues: Vec<Handle<Menu>>,
+    pub app_menu_buttons: Vec<Handle<MenuButton>>,
     pub shortcuts: Vec<Shortcut>,
     pub app_windows: HashMap<usize, Handle<TuiWindow>>,
+    pub time_label: Handle<appbar::Label>,
 }
 
 impl MyDesktop {
@@ -27,10 +32,12 @@ impl MyDesktop {
             base: Desktop::new(),
             arrange_method: None,
             desktop_menu: Handle::None,
-            sep: Handle::None,
+            separator: Handle::None,
             arrange_menu: Handle::None,
             app_menues: vec![Handle::None; shortcuts.len()],
+            app_menu_buttons: vec![Handle::None; shortcuts.len()],
             app_windows: HashMap::new(),
+            time_label: Handle::None,
             shortcuts,
         }
     }
@@ -58,89 +65,61 @@ impl MyDesktop {
 impl OnPaint for MyDesktop {
     fn on_paint(&self, surface: &mut Surface, theme: &Theme) {
         surface.clear(theme.desktop.character);
-
-        surface.write_string(
-            surface.size().width as i32 - 5,
-            1,
-            &time_to_string(),
-            CharAttribute::new(theme.menu.text.normal.foreground, theme.menu.text.normal.background, CharFlags::None),
-            true
-        );
-        /*
-        for (index, shortcut) in self.shortcuts.iter().enumerate() {
-            let x = 1 + 29 * index as i32;
-
-            surface.fill_rect(
-                Rect::new(x, 2, x + 23, 2 + 12 + 1),
-                Character::new(' ', Color::Transparent, Color::Gray, CharFlags::None)
-            );
-
-            surface.write_string(
-                x,
-                2,
-                shortcut.logo.as_str(),
-                CharAttribute::new(Color::White, Color::Gray, CharFlags::None),
-                true
-            );
-
-            let mut text_format = TextFormat::default();
-
-            text_format.set_position(x + 25, 2 + 12 + 1);
-            text_format.set_chars_count(30);
-            text_format.set_align(TextAlignment::Center);
-            text_format.set_attribute(CharAttribute::new(Color::White, Color::Gray, CharFlags::None));
-            //text_format.set_wrap_type(WrapType::SingleLineWrap(24));
-
-            surface.write_text(
-                shortcut.name.as_str(),
-                &text_format
-            );
-        }*/
     }
 }
 
 impl DesktopEvents for MyDesktop {
     fn on_start(&mut self) {
-        let mut menu = Menu::new("Desktop");
-
-        menu.add(Command::new("Exit", Key::None, Commands::Exit));
-
-        self.desktop_menu = self.register_menu(menu);
-
-        let mut menu = Menu::new("Tilling");
-
-        menu.add(SingleChoice::new("No arrangement", Key::None, Commands::NoArrange, true));
-        menu.add(SingleChoice::new("Cascade", Key::None, Commands::Cascade, false));
-        menu.add(SingleChoice::new("Vertical", Key::None, Commands::Vertical, false));
-        menu.add(SingleChoice::new("Horizontal", Key::None, Commands::Horizontal, false));
-        menu.add(SingleChoice::new("Grid", Key::None, Commands::Grid, false));
-
-        self.arrange_menu = self.register_menu(menu);
-
-        let mut menu = Menu::new("|");
-
-        menu.add(Command::new("", Key::None, Commands::None));
-
-        self.sep = self.register_menu(menu);
-
         let shortcuts = self.shortcuts.clone();
+        let mut desktop_menu = Menu::new();
+
+        desktop_menu.add(Command::new("Exit", Key::None, Commands::Exit));
+
+        let desktop_menu_button = self.appbar().add(MenuButton::new("Desktop", desktop_menu, 0, Side::Left));
+
+        let mut tilling_menu = Menu::new();
+
+        tilling_menu.add(SingleChoice::new("No arrangement", Key::None, Commands::NoArrange, true));
+        tilling_menu.add(SingleChoice::new("Cascade", Key::None, Commands::Cascade, false));
+        tilling_menu.add(SingleChoice::new("Vertical", Key::None, Commands::Vertical, false));
+        tilling_menu.add(SingleChoice::new("Horizontal", Key::None, Commands::Horizontal, false));
+        tilling_menu.add(SingleChoice::new("Grid", Key::None, Commands::Grid, false));
+
+        let arrange_menu_button = self.appbar().add(MenuButton::new("Tilling", tilling_menu, 1, Side::Left));
+
+        let separator = self.appbar().add(appbar::Separator::new(2, Side::Left));
+
+        let mut app_menues = vec![Handle::<Menu>::None; shortcuts.len()];
+        let mut app_menu_buttons = vec![Handle::<MenuButton>::None; shortcuts.len()];
         for (index, shortcut) in shortcuts.iter().enumerate() {
-            let mut menu = Menu::new(&shortcut.name);
+            let mut menu = Menu::new();
 
             menu.add(Command::new("Hide", Key::None, Commands::AppVisibilityToggle));
             menu.add(Command::new("Start", Key::None, Commands::OpenApp));
             menu.add(Command::new("Close", Key::None, Commands::CloseApp));
 
             if !shortcut.taskbar.additional_commands.is_empty() {
-                menu.add(Separator::new());
+                menu.add(menu::Separator::new());
             }
 
             for command in &shortcut.taskbar.additional_commands {
                 menu.add(Command::new(&command.name, Key::None, Commands::AppCommand));
             }
 
-            self.app_menues[index] = self.register_menu(menu);
+            app_menues[index] = self.register_menu(menu);
+            app_menu_buttons[index] = self.appbar().add(MenuButton::with_handle(&shortcut.name, app_menues[index], 2 + index as u8, Side::Left));
         }
+
+        self.time_label = self.appbar().add(appbar::Label::new(&time_to_string(), 0, Side::Right));
+
+        self.desktop_menu = desktop_menu_button;
+        self.arrange_menu = arrange_menu_button;
+        self.separator = separator;
+        self.app_menues = app_menues;
+        self.app_menu_buttons = app_menu_buttons;
+
+        let timer = self.timer().expect("Failed to get timer");
+        timer.start(Duration::from_millis(2000));
     }
 
     fn on_update_window_count(&mut self, _count: usize) {
@@ -150,7 +129,20 @@ impl DesktopEvents for MyDesktop {
             self.arrange_windows(method);
         }
     }
+}
 
+impl AppBarEvents for MyDesktop {
+    fn on_update(&self, app_bar: &mut AppBar) {
+        app_bar.show(self.desktop_menu);
+        app_bar.show(self.arrange_menu);
+        app_bar.show(self.separator);
+
+        for app_menu in self.app_menu_buttons.iter() {
+            app_bar.show(*app_menu);
+        }
+
+        app_bar.show(self.time_label);
+    }
 }
 
 impl MenuEvents for MyDesktop {
@@ -262,14 +254,15 @@ impl MenuEvents for MyDesktop {
             self.arrange_windows(method);
         }
     }
+}
 
-    fn on_update_menubar(&self, menubar: &mut MenuBar) {
-        menubar.add(self.desktop_menu, 0);
-        menubar.add(self.arrange_menu, 1);
-        menubar.add(self.sep, 2);
+impl TimerEvents for MyDesktop {
+    fn on_update(&mut self, _: u64) -> EventProcessStatus {
+        let time_label_handle = self.time_label;
+        let time_label = self.appbar().get_mut(time_label_handle).unwrap();
 
-        for (index, app_menu) in self.app_menues.iter().enumerate() {
-            menubar.add(*app_menu, index as u8 + 3);
-        }
+        time_label.set_caption(&time_to_string());
+
+        EventProcessStatus::Processed
     }
 }

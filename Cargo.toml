@@ -1,7 +1,7 @@
 [package]
 name = "desktop-tui"
 description = "A desktop environment without graphics (tmux-like)"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 authors = ["julien-cpsn"]
 license = "MIT"
@@ -12,15 +12,15 @@ repository = "https://github.com/Julien-cpsn/desktop-tui"
 keywords = ["Desktop", "Environment", "TUI", "AppCUI-rs"]
 
 [dependencies]
-appcui = { version = "0.3.7", features = ["CROSSTERM", "TRUE_COLORS"] }
+appcui = { version = "0.4.0", features = ["CROSSTERM", "TRUE_COLORS"] }
 
 virtual-terminal = "0.1.4"
 
-serde = { version = "1.0.220", features = ["derive"] }
-toml = "0.9.5"
+serde = { version = "1.0.226", features = ["derive"] }
+toml = "0.9.7"
 
-anyhow = "1.0.99"
-clap = { version = "4.5.47", features = ["derive"] }
+anyhow = "1.0.100"
+clap = { version = "4.5.48", features = ["derive"] }
 chrono = { version = "0.4.42", features = ["now"] }
 tokio = "1.47.1"
 async-channel = "2.5.0"

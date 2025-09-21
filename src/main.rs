@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = App::with_backend(Type::CrossTerm)
         .desktop(MyDesktop::new(desktop_shortcuts))
-        .menu_bar()
+        .app_bar()
         .theme(theme)
         .color_schema(false)
         .build()?;

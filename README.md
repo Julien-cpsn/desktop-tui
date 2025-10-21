@@ -44,13 +44,13 @@ cargo build --release
 You can replace `cargo run --` with `desktop-tui`
 
 ```shell
-cargo run -- <shortcut_folder_path>
+cargo run --
 ```
 
 Or in release :
 
 ```shell
-cargo run --release -- <shortcut_folder_path>
+cargo run --release --
 ```
 
 ## Shortcut file

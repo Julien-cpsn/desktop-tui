@@ -5,7 +5,6 @@ mod desktop;
 mod shortcut;
 mod utils;
 mod args;
-
 use std::process::exit;
 use crate::desktop::MyDesktop;
 use crate::shortcut::parse_shortcut_dir;
@@ -14,27 +13,21 @@ use appcui::prelude::{App, Theme};
 use appcui::system::Themes;
 use clap::Parser;
 use crate::args::Args;
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-
+    std::fs::create_dir_all(&args.shortcut_dir)?;
     let desktop_shortcuts = parse_shortcut_dir(args.shortcut_dir)?;
-
     let theme = Theme::new(Themes::Default);
-
     //theme.menu.text.normal = CharAttribute::new(Color::Blue, Color::Black, CharFlags::None);
     //theme.text.enphasized_2 = CharAttribute::new(Color::Red, Color::Green, CharFlags::None);
     //theme.desktop.character = Character::new(' ', Color::RGB(255, 255, 255), Color::RGB(85, 85, 85), CharFlags::None);
-
     let app = App::with_backend(Type::CrossTerm)
         .desktop(MyDesktop::new(desktop_shortcuts))
         .app_bar()
         .theme(theme)
         .color_schema(false)
         .build()?;
-
     app.run();
-
     exit(0);
 }
